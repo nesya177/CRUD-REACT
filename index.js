@@ -1,18 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-import 'bootstrap/dist/css/bootstrap.min.css';
+//inisialisasi library
+const express = require("express")
+const app = express()
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+//import fungsi authorization auth
+const auth = require("./auth")
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+//import route user
+const user = require("./route/user")
+app.use("/", user)
+//import route pegawai
+const pegawai = require("./route/pegawai")
+app.use("/pegawai", pegawai)
+
+//membuat web server dengan port 2000
+app.listen(2000, () => {
+    console.log("server run on port 2000")
+})
