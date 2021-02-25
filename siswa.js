@@ -9,6 +9,7 @@ class Siswa extends React.Component {
         this.state = {  
           token:"",
             siswa: [],
+            jur:[],
             id_siswa:"",
             nis:"",
             nama_siswa:"",
@@ -45,6 +46,8 @@ headerConfig = () => {
             kelas:"",
             jurusan:"",
             poin:"",
+            search:"",
+            action:"",
                     action: "insert",
                     isModalOpen: true
         })
@@ -68,6 +71,8 @@ headerConfig = () => {
     }
     handleSave = (event) => {
         event.preventDefault();
+        /* menampung data nid, nama dan poin dari Form
+        ke dalam FormData() untuk dikirim  */
         let url = "";
         if (this.state.action === "insert") {
           url = "http://localhost:2000/siswa/save"
@@ -83,13 +88,16 @@ headerConfig = () => {
             poin: this.state.poin
           }
           // mengirim data ke API untuk disimpan pada database
-          axios.post(url, form)
+          axios.post(url, form, this.headerConfig())
           .then(response => {
           // jika proses simpan berhasil, memanggil data yang terbaru
-          this.getSiswa();
+          this.getsiswa();
           })
+          this.setState({
+            isModalOpen: false
+        })
         }
-    getSiswa = () => {
+    getsiswa = () => {
         let url = "http://localhost:2000/siswa";
         // mengakses api untuk mengambil data siswa
         axios.get(url, this.headerConfig())
@@ -101,11 +109,24 @@ headerConfig = () => {
           console.log(error);
         });
     }
+    getjurusan = () => {
+      let url = "http://localhost:2000/siswa/jurusan";
+      // mengakses api untuk mengambil data siswa
+      axios.get(url, this.headerConfig())
+      .then(response => {
+        // mengisikan data dari respon API ke array siswa
+        this.setState({jur: response.data.jurusan});
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }
     componentDidMount(){
         // method yang pertama kali dipanggil pada saat load page
-        this.getSiswa()
+        this.getsiswa()
+        this.getjurusan()
     }
-    findSiswa = (event) => {
+    findsiswa = (event) => {
         let url = "http://localhost:2000/siswa";
         if (event.keyCode === 13) {
         //   menampung data keyword pencarian
@@ -128,40 +149,36 @@ headerConfig = () => {
         let url = "http://localhost:2000/siswa/" + id_siswa;
         // memanggil url API untuk menghapus data pada database
         if (window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-          axios.delete(url)
+          axios.delete(url, this.headerConfig())
           .then(response => {
             // jika proses hapus data berhasil, memanggil data yang terbaru
-            this.getSiswa();
+            this.getsiswa();
           })
           .catch(error => {
             console.log(error);
           });
         }
     }
-    componentDidMount(){
-        // method yang pertama kali dipanggil pada saat load page
-        this.getSiswa()
-    }
     render(){
-        console.log(this.state.siswa)
+        console.log(this.state.jur)
         return(
             <>
             <NavBar />
             <Card>
-                <Card.Header className="card-header bg-danger text-white" align={'center'}>Data siswa</Card.Header>
+                <Card.Header className="card-header bg-info text-white" align={'center'}>Data siswa</Card.Header>
                 <Card.Body>
-                <input type="text" className="form-control mb-2" name="search" value={this.state.search} onChange={this.bind} onKeyUp={this.findSiswa} placeholder="Pencarian..." />
-                <Button variant="dark" onClick={this.handleAdd}>
+                <input type="text" className="form-control mb-2" name="search" value={this.state.search} onChange={this.bind} onKeyUp={this.findsiswa} placeholder="Pencarian..." />
+                <Button variant="success" onClick={this.handleAdd}>
                     Tambah Data
                 </Button>
                 <Table striped bordered hover>
                     <thead>
                         <tr>
-                            <th>ID Siswa</th>  
-                            <th>Nis</th>
-                            <th>Nama Siswa</th>
+                            <th>ID</th>  
+                            <th>NIS</th> 
+                            <th>Nama Siswa</th> 
                             <th>Kelas</th> 
-                            <th>Jurusan</th>    
+                            <th>Jurusan</th>  
                             <th>Poin</th>  
                             <th>Option</th>
                         </tr>
@@ -170,11 +187,11 @@ headerConfig = () => {
                     {this.state.siswa.map((item,index) => {  
                         return (  
                         <tr key={index}>  
-                            <td>{item.id_siswa}</td>
-                            <td>{item.nis}</td>   
-                            <td>{item.nama_siswa}</td>
-                            <td>{item.kelas}</td> 
-                            <td>{item.jurusan}</td> 
+                            <td>{item.id_siswa}</td>  
+                            <td>{item.nis}</td>
+                            <td>{item.nama_siswa}</td>  
+                            <td>{item.kelas}</td>
+                            <td>{item.nama_jurusan}</td>
                             <td>{item.poin}</td>  
                             <td>  
                             <Button className="btn btn-sm btn-info m-1" data-toggle="modal"  
@@ -196,33 +213,35 @@ headerConfig = () => {
                 
                 <Modal show={this.state.isModalOpen} onHide={this.handleClose}>
                     <Modal.Header closeButton>
-                    <Modal.Title>Form Siswa</Modal.Title>
+                    <Modal.Title>Form siswa</Modal.Title>
                     </Modal.Header>
                     <Form onSubmit={this.handleSave}>
                     <Modal.Body>
         
-                    ID  
-                        <input type="number" name="id_siswa" value={this.state.id_siswa} onChange={this.bind}  
-                        className="form-control" required />
-                         Nis
+                    ID  <input type="number" name="id_siswa" value={this.state.id_siswa} onChange={this.bind}  
+                        className="form-control" required />  
+                        NIS
                         <input type="text" name="nis" value={this.state.nis} onChange={this.bind}  
-                        className="form-control" required />
-                        Nama Siswa
+                        className="form-control" required />  
+                        Nama siswa
                         <input type="text" name="nama_siswa" value={this.state.nama_siswa} onChange={this.bind}  
                         className="form-control" required />  
-                        Kelas 
+                        Kelas
                         <input type="text" name="kelas" value={this.state.kelas} onChange={this.bind}  
-                        className="form-control" required />
-                         Jurusan
-                        <input type="text" name="jurusan" value={this.state.jurusan} onChange={this.bind}  
-                        className="form-control" required />
-                         Poin
-                        <input type="text" name="poin" value={this.state.poin} onChange={this.bind}  
-                        className="form-control" required /> 
+                        className="form-control" required />  
+                        Jurusan
+                            <select name="jurusan" value={this.state.jurusan} onChange={this.bind} className="form-control" required>
+                              {this.state.jur.map((item)=> {  
+                              return ( <option value={item.id_jurusan}>{item.nama_jurusan}</option> )})}
+                            </select>  
+
+                        Poin  
+                        <input type="number" name="poin" value={this.state.poin} onChange={this.bind}  
+                        className="form-control" required />  
                         
                     </Modal.Body>
                      <Modal.Footer>
-                     <button className="btn btn-sm btn-success" type="submit">  
+                     <button className="btn-primary btn-sm" type="submit">  
                      Simpan 
                      </button>
                     </Modal.Footer>
@@ -232,5 +251,6 @@ headerConfig = () => {
     );  
   }
 }
+
 
 export default Siswa
